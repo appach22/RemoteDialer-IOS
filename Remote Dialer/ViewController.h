@@ -8,6 +8,27 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ViewController : UIViewController
+#import "RemoteDialerDevices.h"
+#import "AsyncSocket.h"
+#import "UIDevicesTable.h"
+
+#define RDIALER_SERVICE_PORT 52836
+
+@interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
+{
+    UIDevicesTable * devicesTable;
+    UITextField * tfNumber;
+    NSMutableOrderedSet * devices;
+    AsyncSocket * tcpDialSocket;
+    UIAlertView * dialingAlert;
+}
+
+@property (nonatomic, strong) IBOutlet UIDevicesTable * devicesTable;
+@property (nonatomic, strong) IBOutlet UITextField * tfNumber;
+@property (readwrite, nonatomic) NSMutableOrderedSet * devices;
+
+- (IBAction)dial:(id)sender;
+- (IBAction)numberEditingFinished:(id)sender;
+- (IBAction)backgroundTap:(id)sender;
 
 @end

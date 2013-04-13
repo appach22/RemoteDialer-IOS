@@ -7,10 +7,18 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "AsyncUdpSocket.h"
+#import "AsyncSocket.h"
 
 @class ViewController;
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
+{
+    AsyncUdpSocket * broadcastServerSocket;
+    NSString * broadcastAddress;
+    AsyncSocket * tcpServerSocket;
+    AsyncSocket * connectionSocket;
+}
 
 @property (strong, nonatomic) UIWindow *window;
 

@@ -10,7 +10,19 @@
 
 #import "ViewController.h"
 
+#import "RemoteDevice.h"
+
+#import <ifaddrs.h>
+#import <sys/socket.h>
+#include <arpa/inet.h>
+
+#import <CoreTelephony/CTTelephonyNetworkInfo.h>
+#import <CoreTelephony/CTCarrier.h>
+
+#define kDevicesFileName    @"devices.plist"
+
 @implementation AppDelegate
+
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -21,36 +33,246 @@
     } else {
         self.viewController = [[ViewController alloc] initWithNibName:@"ViewController_iPad" bundle:nil];
     }
+    [self loadDevicesList];
     self.window.rootViewController = self.viewController;
     [self.window makeKeyAndVisible];
+    self.viewController.devices.mParentTable = self.viewController.devicesTable;
+
+    NSUserDefaults * settings = [NSUserDefaults standardUserDefaults];
+    NSString * thisDeviceName = [settings stringForKey:@"device_name"];
+    NSLog(@"model %@", [[UIDevice currentDevice] model]);
+    NSLog(@"localized model %@", [[UIDevice currentDevice] localizedModel]);
+    NSLog(@"name %@", [[UIDevice currentDevice] name]);
+    NSLog(@"system name %@", [[UIDevice currentDevice] systemName]);
+    NSLog(@"system version %@", [[UIDevice currentDevice] systemVersion]);
+    if (thisDeviceName.length == 0)
+    {
+        [settings setValue:[[UIDevice currentDevice] name] forKey:@"device_name"];
+    }
+
+    BOOL carrierAvailable = [self isCarrierAvailable];
+    if (carrierAvailable)
+        [self.viewController.devices addLocal];
+    else
+        [self.viewController.devices removeLocal];
+    
+//==================================== TCP ===========================================
+    tcpServerSocket = [[AsyncSocket alloc] initWithDelegate:self];
+    // Advanced options - enable the socket to contine operations even during modal dialogs, and menu browsing
+	[tcpServerSocket setRunLoopModes:[NSArray arrayWithObject:NSRunLoopCommonModes]];
+
+    NSError *error = nil;
+    if (![tcpServerSocket acceptOnPort:RDIALER_SERVICE_PORT error:&error])
+    {
+        NSLog(@"Error starting server (accept): %@", error);
+        return YES;
+    }
+    
+//==================================== UDP ===========================================
+    broadcastServerSocket = [[AsyncUdpSocket alloc] initWithDelegate:self];
+    error = nil;
+    if (![broadcastServerSocket bindToPort:RDIALER_SERVICE_PORT error:&error])
+    {
+        NSLog(@"Error starting server (bind): %@", error);
+        return YES;
+    }
+    
+    if(![broadcastServerSocket enableBroadcast:YES error:&error])
+    {
+        NSLog(@"Error setting broadcast: %@", error);
+        return YES;
+    }
+    
+    [broadcastServerSocket receiveWithTimeout:-1 tag:0];
+    
+    broadcastAddress = [self getBroadcastForIface:@"en0"];
+    if (broadcastAddress)
+    {
+        [self getOthersInfo:broadcastAddress];
+        
+        if (carrierAvailable)
+            [self sendMyInfo:broadcastAddress];
+    }
+    else
+        NSLog(@"Unable to get broacast address for interface en0");
+
+    NSLog(@"didFinishLaunchingWithOptions()");
     return YES;
+}
+
+- (BOOL)isCarrierAvailable
+{
+    CTTelephonyNetworkInfo * phoneInfo = [[CTTelephonyNetworkInfo alloc] init];
+    CTCarrier * phoneCarrier = [phoneInfo subscriberCellularProvider];
+    NSLog(@"carrierName = %@", phoneCarrier.carrierName);
+    NSLog(@"isoCountryCode = %@", phoneCarrier.isoCountryCode);
+    NSLog(@"mobileCountryCode = %@", phoneCarrier.mobileCountryCode);
+    NSLog(@"mobileNetworkCode = %@", phoneCarrier.mobileNetworkCode);
+    NSLog(@"allowsVOIP = %d", phoneCarrier.allowsVOIP);
+    if (phoneCarrier.isoCountryCode != nil)
+        return YES;
+    return NO;
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
     // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
+    
+    NSLog(@"applicationWillResignActive()");
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
 {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    
+    //[self.viewController.devices writeToFile:[self devicesFilePath]];
+    BOOL success = [NSKeyedArchiver archiveRootObject:self.viewController.devices toFile:[self devicesFilePath]];
+    if (!success)
+        NSLog(@"Archiving error");
+    NSLog(@"applicationDidEnterBackground()");
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
     // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+    NSLog(@"applicationWillEnterForeground()");
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    NSLog(@"applicationDidBecomeActive()");
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    NSLog(@"applicationWillTerminate()");
+}
+
+- (BOOL)onUdpSocket:(AsyncUdpSocket *)sock
+     didReceiveData:(NSData *)data
+            withTag:(long)tag
+           fromHost:(NSString *)host
+               port:(UInt16)port
+{
+	NSString *msg = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+	if (msg)
+	{
+		NSLog(@"%@", [[NSString alloc] initWithFormat:@"Received broadcast: %@", msg]);
+	}
+    if ([msg isEqual:@"GetDeviceInfo"])
+    {
+        NSString * response = [[NSString alloc ] initWithFormat:@"DeviceInfo|my iPhone|1234567890|iPhone 4S"];
+        [broadcastServerSocket sendData:[response dataUsingEncoding:NSUTF8StringEncoding] toHost:host port:RDIALER_SERVICE_PORT withTimeout:-1 tag:0];
+        NSLog(@"My info sent");
+    }
+    else
+    {
+        NSRange range = [msg rangeOfString:@"DeviceInfo"];
+        if (range.location == 0)
+        {
+            NSRange ipv6sign = [host rangeOfString:@"::ffff:"];
+            if (ipv6sign.location == NSNotFound)
+            {
+                NSLog(@"Got info from %@:%d", host, port);
+                RemoteDevice * device = [[RemoteDevice alloc] initWithBroadcastInfo:msg ip:host port:RDIALER_SERVICE_PORT];
+                [self.viewController.devices addDevice:device];
+            }
+        }
+    }
+
+	[broadcastServerSocket receiveWithTimeout:-1 tag:0];
+    
+	return YES;
+}
+
+- (void)onSocket:(AsyncSocket *)sock didAcceptNewSocket:(AsyncSocket *)newSocket
+{
+    NSLog(@"Accepted new connection");
+    connectionSocket = newSocket;
+}
+
+- (void)onSocket:(AsyncSocket *)sock didConnectToHost:(NSString *)host port:(UInt16)port
+{
+    NSLog(@"Connected");
+    [sock readDataToData:[AsyncSocket LFData] withTimeout:3.0 tag:0];
+}
+
+
+- (void)onSocket:(AsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
+{
+	NSString *msg = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+	if (msg)
+	{
+		NSLog(@"%@", [[NSString alloc] initWithFormat:@"Received command: %@", msg]);
+        NSRange range = [msg rangeOfString:@"DialNumber"];
+        if (range.location == 0)
+        {
+            NSString *reply = @"Accepted\n";
+            NSData *replyData = [reply dataUsingEncoding:NSUTF8StringEncoding];
+            [sock writeData:replyData withTimeout:-1 tag:0];
+            range = [msg rangeOfString:@" "];
+            NSString * number = [msg substringFromIndex:range.location + 1];
+            NSLog(@"%@", [[NSString alloc] initWithFormat:@"Number: %@", number]);
+            NSURL *URL = [NSURL URLWithString:[[NSString alloc] initWithFormat:@"tel://%@", number]];
+            [[UIApplication sharedApplication] openURL:URL];
+        }
+	}
+}
+     
+- (NSString *) getBroadcastForIface:(NSString *)iface
+{
+    struct ifaddrs *ifa = NULL, *ifList;
+    if (0 != getifaddrs(&ifList)) // should check for errors
+    {
+        NSLog(@"Error getting interfaces list!");
+        return NULL;
+    }
+    for (ifa = ifList; ifa != NULL; ifa = ifa->ifa_next)
+    {
+        if(ifa->ifa_addr->sa_family == AF_INET)
+        {
+            if([[NSString stringWithUTF8String:ifa->ifa_name] isEqualToString:iface])
+            {
+                return [NSString stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)ifa->ifa_broadaddr)->sin_addr)];
+            }
+        }
+    }
+    return NULL;
+}
+
+- (void)sendMyInfo:(NSString *)address
+{
+    if (!broadcastServerSocket)
+        return;
+    
+    NSString * info = [[NSString alloc] initWithFormat:@"DeviceInfo|%@|%@|%@", self.viewController.devices.mThisDeviceName, self.viewController.devices.mThisDeviceUid, [[UIDevice currentDevice] localizedModel]];
+    [broadcastServerSocket sendData:[info dataUsingEncoding:NSUTF8StringEncoding] toHost:address port:RDIALER_SERVICE_PORT withTimeout:-1 tag:0];
+}
+
+- (void)getOthersInfo:(NSString *)address
+{
+    NSString * request = @"GetDeviceInfo\n";
+    [broadcastServerSocket sendData:[request dataUsingEncoding:NSUTF8StringEncoding] toHost:address port:RDIALER_SERVICE_PORT withTimeout:-1 tag:0];
+}
+
+- (NSString *)devicesFilePath
+{
+    NSArray * paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString * documentsDirectory = [paths objectAtIndex:0];
+    return [documentsDirectory stringByAppendingPathComponent:kDevicesFileName];
+}
+
+- (void)loadDevicesList
+{
+    NSString * filePath = [self devicesFilePath];
+    NSMutableOrderedSet * devices = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
+    NSLog(@"Loaded: %@", devices);
+    self.viewController.devices = [[NSMutableOrderedSet alloc] initWithOrderedSet:devices];
+    [self.viewController.devicesTable reloadData];
 }
 
 @end

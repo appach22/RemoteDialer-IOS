@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F3426E71170F79B80028A181 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3426E70170F79B80028A181 /* CFNetwork.framework */; };
+		F3426E74171078690028A181 /* AsyncUdpSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = F3426E73171078690028A181 /* AsyncUdpSocket.m */; };
+		F3426E771710980D0028A181 /* AsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = F3426E761710980D0028A181 /* AsyncSocket.m */; };
+		F3426E7A17149B3B0028A181 /* RemoteDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = F3426E7917149B3B0028A181 /* RemoteDevice.m */; };
+		F3426E7D1714B2860028A181 /* RemoteDialerDevices.m in Sources */ = {isa = PBXBuildFile; fileRef = F3426E7C1714B2860028A181 /* RemoteDialerDevices.m */; };
+		F3426E7F17188EEB0028A181 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3426E7E17188EEB0028A181 /* CoreTelephony.framework */; };
+		F3426E82171964860028A181 /* UIDevicesTable.m in Sources */ = {isa = PBXBuildFile; fileRef = F3426E81171964860028A181 /* UIDevicesTable.m */; };
+		F3426E841719838D0028A181 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = F3426E831719838D0028A181 /* Settings.bundle */; };
 		F3966EF01706E73700D53AE3 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3966EEF1706E73700D53AE3 /* UIKit.framework */; };
 		F3966EF21706E73700D53AE3 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3966EF11706E73700D53AE3 /* Foundation.framework */; };
 		F3966EF41706E73700D53AE3 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3966EF31706E73700D53AE3 /* CoreGraphics.framework */; };
@@ -22,6 +30,19 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F3426E70170F79B80028A181 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		F3426E72171078690028A181 /* AsyncUdpSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncUdpSocket.h; sourceTree = "<group>"; };
+		F3426E73171078690028A181 /* AsyncUdpSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncUdpSocket.m; sourceTree = "<group>"; };
+		F3426E751710980D0028A181 /* AsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncSocket.h; sourceTree = "<group>"; };
+		F3426E761710980D0028A181 /* AsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncSocket.m; sourceTree = "<group>"; };
+		F3426E7817149B3B0028A181 /* RemoteDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RemoteDevice.h; sourceTree = "<group>"; };
+		F3426E7917149B3B0028A181 /* RemoteDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RemoteDevice.m; sourceTree = "<group>"; };
+		F3426E7B1714B2860028A181 /* RemoteDialerDevices.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RemoteDialerDevices.h; sourceTree = "<group>"; };
+		F3426E7C1714B2860028A181 /* RemoteDialerDevices.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RemoteDialerDevices.m; sourceTree = "<group>"; };
+		F3426E7E17188EEB0028A181 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
+		F3426E80171964860028A181 /* UIDevicesTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIDevicesTable.h; sourceTree = "<group>"; };
+		F3426E81171964860028A181 /* UIDevicesTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UIDevicesTable.m; sourceTree = "<group>"; };
+		F3426E831719838D0028A181 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		F3966EEC1706E73700D53AE3 /* Remote Dialer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Remote Dialer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3966EEF1706E73700D53AE3 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		F3966EF11706E73700D53AE3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -46,6 +67,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3426E7F17188EEB0028A181 /* CoreTelephony.framework in Frameworks */,
+				F3426E71170F79B80028A181 /* CFNetwork.framework in Frameworks */,
 				F3966EF01706E73700D53AE3 /* UIKit.framework in Frameworks */,
 				F3966EF21706E73700D53AE3 /* Foundation.framework in Frameworks */,
 				F3966EF41706E73700D53AE3 /* CoreGraphics.framework in Frameworks */,
@@ -58,6 +81,9 @@
 		F3966EE31706E73700D53AE3 = {
 			isa = PBXGroup;
 			children = (
+				F3426E831719838D0028A181 /* Settings.bundle */,
+				F3426E7E17188EEB0028A181 /* CoreTelephony.framework */,
+				F3426E70170F79B80028A181 /* CFNetwork.framework */,
 				F3966EF51706E73700D53AE3 /* Remote Dialer */,
 				F3966EEE1706E73700D53AE3 /* Frameworks */,
 				F3966EED1706E73700D53AE3 /* Products */,
@@ -86,10 +112,20 @@
 			isa = PBXGroup;
 			children = (
 				F3966EFE1706E73700D53AE3 /* AppDelegate.h */,
+				F3426E751710980D0028A181 /* AsyncSocket.h */,
+				F3426E761710980D0028A181 /* AsyncSocket.m */,
 				F3966EFF1706E73700D53AE3 /* AppDelegate.m */,
+				F3426E7817149B3B0028A181 /* RemoteDevice.h */,
+				F3426E7917149B3B0028A181 /* RemoteDevice.m */,
+				F3426E7B1714B2860028A181 /* RemoteDialerDevices.h */,
+				F3426E7C1714B2860028A181 /* RemoteDialerDevices.m */,
 				F3966F071706E73700D53AE3 /* ViewController.h */,
 				F3966F081706E73700D53AE3 /* ViewController.m */,
+				F3426E72171078690028A181 /* AsyncUdpSocket.h */,
+				F3426E73171078690028A181 /* AsyncUdpSocket.m */,
 				F3966F0A1706E73700D53AE3 /* ViewController_iPhone.xib */,
+				F3426E80171964860028A181 /* UIDevicesTable.h */,
+				F3426E81171964860028A181 /* UIDevicesTable.m */,
 				F3966F0D1706E73700D53AE3 /* ViewController_iPad.xib */,
 				F3966EF61706E73700D53AE3 /* Supporting Files */,
 			);
@@ -167,6 +203,7 @@
 				F3966F061706E73700D53AE3 /* Default-568h@2x.png in Resources */,
 				F3966F0C1706E73700D53AE3 /* ViewController_iPhone.xib in Resources */,
 				F3966F0F1706E73700D53AE3 /* ViewController_iPad.xib in Resources */,
+				F3426E841719838D0028A181 /* Settings.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -180,6 +217,11 @@
 				F3966EFC1706E73700D53AE3 /* main.m in Sources */,
 				F3966F001706E73700D53AE3 /* AppDelegate.m in Sources */,
 				F3966F091706E73700D53AE3 /* ViewController.m in Sources */,
+				F3426E74171078690028A181 /* AsyncUdpSocket.m in Sources */,
+				F3426E771710980D0028A181 /* AsyncSocket.m in Sources */,
+				F3426E7A17149B3B0028A181 /* RemoteDevice.m in Sources */,
+				F3426E7D1714B2860028A181 /* RemoteDialerDevices.m in Sources */,
+				F3426E82171964860028A181 /* UIDevicesTable.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -312,6 +354,7 @@
 				F3966F141706E73700D53AE3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
