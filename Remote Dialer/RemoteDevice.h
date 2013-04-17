@@ -12,7 +12,7 @@
 #define DEVICE_TYPE_THIS            1
 #define DEVICE_TYPE_LOCAL_NETWORK   2
 
-@interface RemoteDevice : NSObject <NSCoding>
+@interface RemoteDevice : NSObject <NSCoding, NSCopying>
 {
 @public
     NSString * mName;

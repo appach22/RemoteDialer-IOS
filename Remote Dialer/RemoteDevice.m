@@ -105,4 +105,17 @@
     [aCoder encodeObject:mModel forKey:kModelKey];
 }
 
+- (id)copyWithZone:(NSZone *)zone
+{
+    NSLog(@"Copy");
+    RemoteDevice * deviceCopy = [[[self class] allocWithZone:zone] init];
+    deviceCopy->mName = [mName copyWithZone:zone];
+    deviceCopy->mUid = [mUid copyWithZone:zone];
+    deviceCopy->mType = mType;
+    deviceCopy->mHost = [mHost copyWithZone:zone];
+    deviceCopy->mPort = mPort;
+    deviceCopy->mModel = [mModel copyWithZone:zone];
+    return deviceCopy;
+}
+
 @end

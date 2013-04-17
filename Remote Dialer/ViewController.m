@@ -46,16 +46,84 @@
 {
     static NSString * devicesTableIdentifier = @"DevicesTable";
     UITableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:devicesTableIdentifier];
+    UIButton * deletebtn = nil;
     if (cell == nil)
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:devicesTableIdentifier];
+        deletebtn=[UIButton buttonWithType:UIButtonTypeRoundedRect];
+        deletebtn.frame=CGRectMake(250, 10, 25, 25);
+        [deletebtn setTitle:@"x" forState:UIControlStateNormal];
+        //[deletebtn setImage:[UIImage imageNamed:@"log_delete_touch.png"] forState:UIControlStateNormal];
+        [deletebtn addTarget:self action:@selector(removeDevice:) forControlEvents:UIControlEventTouchUpInside];
+        deletebtn.hidden = YES;
+        [cell addSubview:deletebtn];
     }
     NSUInteger row = [indexPath row];
     RemoteDevice * device = [self.devices objectAtIndex:row];
     cell.textLabel.text = device->mName;
     cell.detailTextLabel.text = device->mModel;
+    if (!deletebtn)
+        deletebtn = (UIButton *)[cell viewWithTag:row + 1];
+    deletebtn.tag = row + 1;
     return cell;
 }
+
+- (void)removeDevice:(id)sender
+{
+    NSInteger index = ((UIView *)sender).tag - 1;
+    NSInteger nextIndex = 0;
+    NSLog(@"delete %d", index);
+    if ([self.devices count] == 1)
+        nextIndex = -1;
+    else if (index == [self.devices count] - 1)
+        nextIndex = index - 1;
+    else
+        nextIndex = index;
+    
+    NSIndexPath * indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+    [devices removeDeviceAtIndex:index];
+    [devicesTable deleteRowsAtIndexPaths:[NSArray arrayWithObjects:indexPath, nil] withRowAnimation:UITableViewRowAnimationFade];
+    if (nextIndex != -1)
+    {
+        for (int i = nextIndex; i < [devicesTable numberOfRowsInSection:0]; ++i)
+        {
+            indexPath = [NSIndexPath indexPathForRow:i inSection:0];
+            UITableViewCell *cell = [self.devicesTable cellForRowAtIndexPath:indexPath];
+            [cell viewWithTag:i + 2].tag = i + 1;
+        }
+        indexPath = [NSIndexPath indexPathForRow:nextIndex inSection:0];
+        [devicesTable selectRowAtIndexPath:indexPath animated:YES  scrollPosition:UITableViewScrollPositionBottom];
+        [self selectRow:nextIndex];
+    }
+}
+
+- (void)selectRow:(NSUInteger)row
+{
+    NSLog(@"selectRow %d", row);
+    devices.mLastSelectedIndex = [[NSNumber alloc] initWithInt:row];
+    NSIndexPath * indexPath = [NSIndexPath indexPathForRow:row inSection:0];
+    UITableViewCell *cell = [self.devicesTable cellForRowAtIndexPath:indexPath];
+    [cell viewWithTag:row + 1].hidden = NO;
+}
+
+- (void)deselectRow:(NSUInteger)row
+{
+    NSLog(@"deselectRow %d", row);
+    NSIndexPath * indexPath = [NSIndexPath indexPathForRow:row inSection:0];
+    UITableViewCell *cell = [devicesTable cellForRowAtIndexPath:indexPath];
+    [cell viewWithTag:row + 1].hidden = YES;
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [self selectRow: [indexPath row]];
+}
+
+-(void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [self deselectRow: [indexPath row]];
+}
+
 
 - (IBAction)numberEditingFinished:(id)sender
 {
@@ -76,6 +144,8 @@
 
 - (IBAction)dial:(id)sender
 {
+    if (tfNumber.text.length < 3)
+        return;
     NSIndexPath * selectedIndexPath = [[self devicesTable] indexPathForSelectedRow];
     RemoteDevice * selectedDevice = [[self devices] objectAtIndex:selectedIndexPath.row];
     if (selectedDevice->mType == DEVICE_TYPE_THIS)
@@ -123,8 +193,6 @@
 
 - (void)onSocket:(AsyncSocket *)sock didConnectToHost:(NSString *)host port:(UInt16)port
 {
-    if (tfNumber.text.length < 3)
-        return;
 	NSString *requestStr = [NSString stringWithFormat:@"DialNumber %@\n", tfNumber.text];
 	NSData *requestData = [requestStr dataUsingEncoding:NSUTF8StringEncoding];
 	

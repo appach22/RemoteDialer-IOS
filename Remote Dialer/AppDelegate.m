@@ -19,7 +19,8 @@
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>
 
-#define kDevicesFileName    @"devices.plist"
+#define kDevicesFileName            @"devices.plist"
+#define kSelectedDeviceFileName     @"selected_device.plist"
 
 @implementation AppDelegate
 
@@ -37,7 +38,7 @@
     self.window.rootViewController = self.viewController;
     [self.window makeKeyAndVisible];
     self.viewController.devices.mParentTable = self.viewController.devicesTable;
-
+    
     NSUserDefaults * settings = [NSUserDefaults standardUserDefaults];
     NSString * thisDeviceName = [settings stringForKey:@"device_name"];
     NSLog(@"model %@", [[UIDevice currentDevice] model]);
@@ -55,7 +56,12 @@
         [self.viewController.devices addLocal];
     else
         [self.viewController.devices removeLocal];
+
+    NSIndexPath * indexPath = [NSIndexPath indexPathForRow:self.viewController.devices.mLastSelectedIndex.intValue inSection:0];
+    [self.viewController.devicesTable selectRowAtIndexPath:indexPath animated:YES  scrollPosition:UITableViewScrollPositionBottom];
+    [self.viewController selectRow:indexPath.row];
     
+
 //==================================== TCP ===========================================
     tcpServerSocket = [[AsyncSocket alloc] initWithDelegate:self];
     // Advanced options - enable the socket to contine operations even during modal dialogs, and menu browsing
@@ -128,9 +134,7 @@
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     
     //[self.viewController.devices writeToFile:[self devicesFilePath]];
-    BOOL success = [NSKeyedArchiver archiveRootObject:self.viewController.devices toFile:[self devicesFilePath]];
-    if (!success)
-        NSLog(@"Archiving error");
+    [self saveDevicesList];
     NSLog(@"applicationDidEnterBackground()");
 }
 
@@ -165,8 +169,7 @@
 	}
     if ([msg isEqual:@"GetDeviceInfo"])
     {
-        NSString * response = [[NSString alloc ] initWithFormat:@"DeviceInfo|my iPhone|1234567890|iPhone 4S"];
-        [broadcastServerSocket sendData:[response dataUsingEncoding:NSUTF8StringEncoding] toHost:host port:RDIALER_SERVICE_PORT withTimeout:-1 tag:0];
+        [self sendMyInfo:host];
         NSLog(@"My info sent");
     }
     else
@@ -266,13 +269,31 @@
     return [documentsDirectory stringByAppendingPathComponent:kDevicesFileName];
 }
 
+- (NSString *)selectedDeviceFilePath
+{
+    NSArray * paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString * documentsDirectory = [paths objectAtIndex:0];
+    return [documentsDirectory stringByAppendingPathComponent:kSelectedDeviceFileName];
+}
+
 - (void)loadDevicesList
 {
     NSString * filePath = [self devicesFilePath];
     NSMutableOrderedSet * devices = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
-    NSLog(@"Loaded: %@", devices);
     self.viewController.devices = [[NSMutableOrderedSet alloc] initWithOrderedSet:devices];
     [self.viewController.devicesTable reloadData];
+    filePath = [self selectedDeviceFilePath];
+    self.viewController.devices.mLastSelectedIndex = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
+}
+
+- (void)saveDevicesList
+{
+    BOOL success = [NSKeyedArchiver archiveRootObject:self.viewController.devices toFile:[self devicesFilePath]];
+    if (!success)
+        NSLog(@"Archiving 1 error");
+    success = [NSKeyedArchiver archiveRootObject:self.viewController.devices.mLastSelectedIndex toFile:[self selectedDeviceFilePath]];
+    if (!success)
+        NSLog(@"Archiving 2 error");
 }
 
 @end

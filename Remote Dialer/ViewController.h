@@ -31,4 +31,7 @@
 - (IBAction)numberEditingFinished:(id)sender;
 - (IBAction)backgroundTap:(id)sender;
 
+- (void)selectRow:(NSUInteger)row;
+- (void)deselectRow:(NSUInteger)row;
+
 @end

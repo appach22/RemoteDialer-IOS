@@ -11,11 +11,13 @@
 
 @interface NSMutableOrderedSet (RemoteDialerDevices)
 
+
 @property (nonatomic, assign) NSString * mThisDeviceName;
 @property (nonatomic, readwrite) NSString * mThisDeviceUid;
 @property (nonatomic, readwrite) NSString * mDefaultDeviceName;
 @property (nonatomic, readwrite) NSString * mDefaultDeviceUid;
 @property (nonatomic, readwrite) UITableView * mParentTable;
+@property (nonatomic, readwrite) NSNumber * mLastSelectedIndex;
 
 - (void)updateThisDeviceName:(NSString *)newName;
 
@@ -26,6 +28,8 @@
 - (void)removeAllExceptLocal;
 
 - (void)addLocal;
+
+- (void)removeDeviceAtIndex:(NSUInteger)index;
 
 - (void)removeLocal;
 

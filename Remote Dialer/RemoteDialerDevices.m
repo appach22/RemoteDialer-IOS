@@ -40,6 +40,7 @@
 
 - (void)addDevice:(RemoteDevice *)device
 {
+    RemoteDevice * selectedDevice = [self objectAtIndex:self.mLastSelectedIndex.intValue];
     int index = [self indexOfObject:device];
     if (index != NSNotFound)
     {
@@ -51,11 +52,13 @@
     }
     else
         [self addObject:device];
+    self.mLastSelectedIndex = [[NSNumber alloc] initWithInt:[self indexOfObject:selectedDevice]];
     [self reportNewDevices];
 }
 
 - (void)removeAllExceptLocal
 {
+    RemoteDevice * selectedDevice = [self objectAtIndex:self.mLastSelectedIndex.intValue];
     RemoteDevice * thisDevice = nil;
     for (int i = 0; i < [self count]; ++i)
         if (((RemoteDevice *)[self objectAtIndex:i])->mType == DEVICE_TYPE_THIS)
@@ -66,6 +69,7 @@
     [self removeAllObjects];
     if (thisDevice)
         [self addObject:thisDevice];
+    self.mLastSelectedIndex = [[NSNumber alloc] initWithInt:[self indexOfObject:selectedDevice]];
     [self reportNewDevices];
 }
 
@@ -77,12 +81,20 @@
     [self addDevice:[[RemoteDevice alloc] initLocalWithName:self.mThisDeviceName andUid:self.mThisDeviceUid]];
 }
 
+- (void)removeDeviceAtIndex:(NSUInteger)index
+{
+    [self removeObjectAtIndex:index];
+    //[self reportNewDevices];
+}
+
 - (void)removeLocal
 {
+    RemoteDevice * selectedDevice = [self objectAtIndex:self.mLastSelectedIndex.intValue];
     int localIndex = [self getLocalDeviceIndex];
     if (localIndex != NSNotFound)
     {
         [self removeObjectAtIndex:localIndex];
+        self.mLastSelectedIndex = [[NSNumber alloc] initWithInt:[self indexOfObject:selectedDevice]];
         [self reportNewDevices];
     }
 }
@@ -110,6 +122,11 @@
     }
     if (self.mParentTable)
         [self.mParentTable reloadData];
+    if (self.mLastSelectedIndex.intValue != NSNotFound)
+    {
+        NSIndexPath * indexPath = [NSIndexPath indexPathForRow:self.mLastSelectedIndex.intValue inSection:0];
+        [self.mParentTable selectRowAtIndexPath:indexPath animated:YES  scrollPosition:UITableViewScrollPositionBottom];
+    }
     return;
 }
 
@@ -166,6 +183,17 @@ static char const * const kMParentTable = "kMParentTable";
 - (UITableView *)mParentTable
 {
     return objc_getAssociatedObject(self, kMParentTable);
+}
+
+@dynamic mLastSelectedIndex;
+static char const * const kMLastSelectedIndex = "kMLastSelectedIndex";
+- (void)setMLastSelectedIndex:(NSNumber *)mLastSelectedIndex
+{
+    objc_setAssociatedObject(self, kMLastSelectedIndex, mLastSelectedIndex, OBJC_ASSOCIATION_ASSIGN);
+}
+- (NSNumber *)mLastSelectedIndex
+{
+    return objc_getAssociatedObject(self, kMLastSelectedIndex);
 }
 
 @end
