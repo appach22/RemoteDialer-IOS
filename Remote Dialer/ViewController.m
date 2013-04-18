@@ -44,6 +44,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    NSLog(@"cellForRowAtIndexPath");
     static NSString * devicesTableIdentifier = @"DevicesTable";
     UITableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:devicesTableIdentifier];
     UIButton * deletebtn = nil;
@@ -62,6 +63,13 @@
     RemoteDevice * device = [self.devices objectAtIndex:row];
     cell.textLabel.text = device->mName;
     cell.detailTextLabel.text = device->mModel;
+    if (!device->mIsAvailable)
+    {
+        cell.textLabel.textColor = [UIColor lightGrayColor];
+        //cell.detailTextLabel.textColor = [UIColor lightGrayColor];
+    }
+    else
+        cell.textLabel.textColor = [UIColor blackColor];
     if (!deletebtn)
         deletebtn = (UIButton *)[cell viewWithTag:row + 1];
     deletebtn.tag = row + 1;
@@ -166,6 +174,43 @@
     }
 }
 
+
+- (void)checkDevicesAvailability
+{
+    currentDeviceCheckIndex = 0;
+    if (currentDeviceCheckIndex < devices.count)
+        if (![self checkDeviceAvailability:[devices objectAtIndex:currentDeviceCheckIndex]])
+        {
+            [devices markDeviceAtIndex:currentDeviceCheckIndex isAvailable:NO];
+            [self checkNextDeviceAvailability];
+        }
+}
+
+- (void)checkNextDeviceAvailability
+{
+    currentDeviceCheckIndex++;
+    if (currentDeviceCheckIndex < devices.count)
+        if (![self checkDeviceAvailability:[devices objectAtIndex:currentDeviceCheckIndex]])
+        {
+            [devices markDeviceAtIndex:currentDeviceCheckIndex isAvailable:NO];
+            [self checkNextDeviceAvailability];
+        }
+}
+
+- (BOOL)checkDeviceAvailability:(RemoteDevice *)device
+{
+    if (device->mType == DEVICE_TYPE_THIS || device->mType == DEVICE_TYPE_NONE)
+        return NO;
+    tcpCheckSocket = [[AsyncSocket alloc] initWithDelegate:self];
+    NSError *error = nil;
+    if (![tcpCheckSocket connectToHost:device->mHost onPort:device->mPort withTimeout:10 error:&error])
+    {
+        NSLog(@"Error connecting: %@", error);
+        return NO;
+    }
+    return YES;
+}
+
 - (void)showDialingAlert
 {
     dialingAlert = [[UIAlertView alloc]initWithTitle:@"" message:@"Набираем номер..." delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
@@ -174,7 +219,7 @@
     if(dialingAlert != nil) {
         UIActivityIndicatorView *indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
         
-        indicator.center = CGPointMake(dialingAlert.bounds.size.width/2, dialingAlert.bounds.size.height-45);
+        indicator.center = CGPointMake(dialingAlert.bounds.size.width/2, dialingAlert.bounds.size.height - 45);
         [indicator startAnimating];
         [dialingAlert addSubview:indicator];
     }
@@ -193,7 +238,11 @@
 
 - (void)onSocket:(AsyncSocket *)sock didConnectToHost:(NSString *)host port:(UInt16)port
 {
-	NSString *requestStr = [NSString stringWithFormat:@"DialNumber %@\n", tfNumber.text];
+	NSString *requestStr;
+    if (sock == tcpDialSocket)
+        requestStr = [NSString stringWithFormat:@"DialNumber %@\n", tfNumber.text];
+    else if (sock == tcpCheckSocket)
+        requestStr = @"CheckAvailability\n";
 	NSData *requestData = [requestStr dataUsingEncoding:NSUTF8StringEncoding];
 	
 	[sock writeData:requestData withTimeout:-1 tag:0];
@@ -208,7 +257,10 @@
         NSRange range = [msg rangeOfString:@"Accepted"];
         if (range.location == 0)
         {
-            NSLog(@"Number dialed successfully");
+            if (sock == tcpDialSocket)
+                NSLog(@"Number dialed successfully");
+            else if (sock == tcpCheckSocket)
+                [devices markDeviceAtIndex:currentDeviceCheckIndex isAvailable:YES];
         }
         else
         {
@@ -218,6 +270,20 @@
     [self dismissDialingAlert];
     [sock setDelegate:nil];
     [sock disconnect];
+    if (sock == tcpCheckSocket)
+        [self checkNextDeviceAvailability];
+}
+
+- (void)processConnectionFailureForSocket:(AsyncSocket *)sock
+{
+    [self dismissDialingAlert];
+    [sock setDelegate:nil];
+    [sock disconnect];
+    if (sock == tcpCheckSocket)
+    {
+        [devices markDeviceAtIndex:currentDeviceCheckIndex isAvailable:NO];
+        [self checkNextDeviceAvailability];
+    }    
 }
 
 - (NSTimeInterval)onSocket:(AsyncSocket *)sock
@@ -226,9 +292,7 @@
                  bytesDone:(NSUInteger)length
 {
     NSLog(@"Read timed out!");
-    [self dismissDialingAlert];
-    [sock setDelegate:nil];
-    [sock disconnect];
+    [self processConnectionFailureForSocket:sock];
     return 0;
 }
 
@@ -238,21 +302,24 @@
                  bytesDone:(NSUInteger)length
 {
     NSLog(@"Write timed out!");
-    [self dismissDialingAlert];
-    [sock setDelegate:nil];
-    [sock disconnect];
+    [self processConnectionFailureForSocket:sock];
     return 0;
 }
 
 - (void)onSocket:(AsyncSocket *)sock willDisconnectWithError:(NSError *)err
 {
     NSLog(@"onSocket:%p willDisconnectWithError:%@", sock, err);
+    if (sock == tcpCheckSocket)
+        [devices markDeviceAtIndex:currentDeviceCheckIndex isAvailable:NO];
 }
-                  
+
 - (void)onSocketDidDisconnect:(AsyncSocket *)sock
 {
     NSLog(@"onSocketDidDisconnect:%p", sock);
     [self dismissDialingAlert];
+    [sock setDelegate:nil];
+    if (sock == tcpCheckSocket)
+        [self checkNextDeviceAvailability];
 }
 
 @end

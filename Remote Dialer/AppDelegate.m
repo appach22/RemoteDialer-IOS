@@ -38,6 +38,7 @@
     self.window.rootViewController = self.viewController;
     [self.window makeKeyAndVisible];
     self.viewController.devices.mParentTable = self.viewController.devicesTable;
+    [self.viewController checkDevicesAvailability];
     
     NSUserDefaults * settings = [NSUserDefaults standardUserDefaults];
     NSString * thisDeviceName = [settings stringForKey:@"device_name"];
@@ -167,7 +168,7 @@
 	{
 		NSLog(@"%@", [[NSString alloc] initWithFormat:@"Received broadcast: %@", msg]);
 	}
-    if ([msg isEqual:@"GetDeviceInfo"])
+    if ([msg isEqual:@"GetDeviceInfo\n"])
     {
         [self sendMyInfo:host];
         NSLog(@"My info sent");
@@ -211,17 +212,26 @@
 	if (msg)
 	{
 		NSLog(@"%@", [[NSString alloc] initWithFormat:@"Received command: %@", msg]);
-        NSRange range = [msg rangeOfString:@"DialNumber"];
-        if (range.location == 0)
+        if ([msg isEqual:@"CheckAvailability\n"])
         {
             NSString *reply = @"Accepted\n";
             NSData *replyData = [reply dataUsingEncoding:NSUTF8StringEncoding];
             [sock writeData:replyData withTimeout:-1 tag:0];
-            range = [msg rangeOfString:@" "];
-            NSString * number = [msg substringFromIndex:range.location + 1];
-            NSLog(@"%@", [[NSString alloc] initWithFormat:@"Number: %@", number]);
-            NSURL *URL = [NSURL URLWithString:[[NSString alloc] initWithFormat:@"tel://%@", number]];
-            [[UIApplication sharedApplication] openURL:URL];
+        }
+        else
+        {
+            NSRange range = [msg rangeOfString:@"DialNumber"];
+            if (range.location == 0)
+            {
+                NSString *reply = @"Accepted\n";
+                NSData *replyData = [reply dataUsingEncoding:NSUTF8StringEncoding];
+                [sock writeData:replyData withTimeout:-1 tag:0];
+                range = [msg rangeOfString:@" "];
+                NSString * number = [msg substringFromIndex:range.location + 1];
+                NSLog(@"%@", [[NSString alloc] initWithFormat:@"Number: %@", number]);
+                NSURL *URL = [NSURL URLWithString:[[NSString alloc] initWithFormat:@"tel://%@", number]];
+                [[UIApplication sharedApplication] openURL:URL];
+            }
         }
 	}
 }

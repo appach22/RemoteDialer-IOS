@@ -21,6 +21,7 @@
     int mPort;
     NSString * mModel;
     NSString * mUid;
+    BOOL mIsAvailable;
 }
 
 - (id)initLocalWithName:(NSString*)deviceName andUid:(NSString*)uid;

@@ -43,4 +43,6 @@
 
 - (void)writeToFile:(NSString *)fileName;
 
+- (void)markDeviceAtIndex:(NSUInteger)deviceIndex isAvailable:(BOOL)availability;
+
 @end

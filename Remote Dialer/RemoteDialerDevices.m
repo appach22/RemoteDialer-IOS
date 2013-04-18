@@ -109,6 +109,12 @@
     return [self indexOfObject:[[RemoteDevice alloc] initLocalWithName:self.mThisDeviceName andUid:self.mThisDeviceUid]];
 }
 
+- (void)markDeviceAtIndex:(NSUInteger)deviceIndex isAvailable:(BOOL)availability
+{
+    ((RemoteDevice *)[self objectAtIndex:deviceIndex])->mIsAvailable = availability;
+    [self reportNewDevices];
+}
+
 - (void)reportNewDevices
 {
     for (int i = 0; i < [self count]; ++i)

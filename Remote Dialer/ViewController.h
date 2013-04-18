@@ -20,6 +20,8 @@
     UITextField * tfNumber;
     NSMutableOrderedSet * devices;
     AsyncSocket * tcpDialSocket;
+    AsyncSocket * tcpCheckSocket;
+    NSUInteger currentDeviceCheckIndex;
     UIAlertView * dialingAlert;
 }
 
@@ -33,5 +35,9 @@
 
 - (void)selectRow:(NSUInteger)row;
 - (void)deselectRow:(NSUInteger)row;
+
+- (BOOL)checkDeviceAvailability:(RemoteDevice *)device;
+- (void)checkDevicesAvailability;
+- (void)checkNextDeviceAvailability;
 
 @end

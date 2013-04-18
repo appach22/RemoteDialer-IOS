@@ -50,6 +50,7 @@
         mModel = [[NSString alloc] init];
         mHost = [[NSString alloc] init];
         mPort = 0;
+        mIsAvailable = YES;
     }
 
     return self;
@@ -67,6 +68,7 @@
         mModel = [[NSString alloc] initWithString:infos[3]];
         mHost = [[NSString alloc] initWithString:deviceIP];
         mPort = devicePort;
+        mIsAvailable = YES;
     }
     
     return self;
