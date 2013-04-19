@@ -11,6 +11,7 @@
 #import "RemoteDialerDevices.h"
 #import "AsyncSocket.h"
 #import "UIDevicesTable.h"
+#import "AppDelegate.h"
 
 #define RDIALER_SERVICE_PORT 52836
 
@@ -23,13 +24,20 @@
     AsyncSocket * tcpCheckSocket;
     NSUInteger currentDeviceCheckIndex;
     UIAlertView * dialingAlert;
+    UIActivityIndicatorView * progress;
+    UILabel * progressTitle;
+    AppDelegate * context;
 }
 
 @property (nonatomic, strong) IBOutlet UIDevicesTable * devicesTable;
 @property (nonatomic, strong) IBOutlet UITextField * tfNumber;
 @property (readwrite, nonatomic) NSMutableOrderedSet * devices;
+@property (readwrite, nonatomic) AppDelegate * context;
+@property (nonatomic, strong) IBOutlet UIActivityIndicatorView * progress;
+@property (nonatomic, strong) IBOutlet UILabel * progressTitle;
 
 - (IBAction)dial:(id)sender;
+- (IBAction)searchDevices:(id)sender;
 - (IBAction)numberEditingFinished:(id)sender;
 - (IBAction)backgroundTap:(id)sender;
 

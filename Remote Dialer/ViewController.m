@@ -18,6 +18,9 @@
 @synthesize devicesTable;
 @synthesize tfNumber;
 @synthesize devices;
+@synthesize progress;
+@synthesize progressTitle;
+@synthesize context;
 
 - (void)viewDidLoad
 {
@@ -44,7 +47,6 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"cellForRowAtIndexPath");
     static NSString * devicesTableIdentifier = @"DevicesTable";
     UITableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:devicesTableIdentifier];
     UIButton * deletebtn = nil;
@@ -63,16 +65,29 @@
     RemoteDevice * device = [self.devices objectAtIndex:row];
     cell.textLabel.text = device->mName;
     cell.detailTextLabel.text = device->mModel;
-    if (!device->mIsAvailable)
+    if (device->mIsAvailable || device->mType == DEVICE_TYPE_THIS)
     {
-        cell.textLabel.textColor = [UIColor lightGrayColor];
+        cell.textLabel.textColor = cell.textLabel.highlightedTextColor = [UIColor colorWithRed:0.3 green:1 blue:0.3 alpha:1];
         //cell.detailTextLabel.textColor = [UIColor lightGrayColor];
     }
     else
-        cell.textLabel.textColor = [UIColor blackColor];
+        cell.textLabel.textColor = cell.textLabel.highlightedTextColor = [UIColor colorWithRed:1 green:0.3 blue:0.3 alpha:1];
+    // Reuse cell
     if (!deletebtn)
-        deletebtn = (UIButton *)[cell viewWithTag:row + 1];
-    deletebtn.tag = row + 1;
+    {
+        // Find button 
+        NSArray * views = [cell subviews];
+        for (int i = 0; i < views.count; ++i)
+            if ([views[i] isKindOfClass:[UIButton class]])
+            {
+                deletebtn = (UIButton *)views[i];
+                deletebtn.hidden = !([tableView indexPathForSelectedRow].row == row);
+                break;
+            }
+    }
+    // Assign proper tag
+    if (deletebtn)
+        deletebtn.tag = row + 1;
     return cell;
 }
 
@@ -107,7 +122,6 @@
 
 - (void)selectRow:(NSUInteger)row
 {
-    NSLog(@"selectRow %d", row);
     devices.mLastSelectedIndex = [[NSNumber alloc] initWithInt:row];
     NSIndexPath * indexPath = [NSIndexPath indexPathForRow:row inSection:0];
     UITableViewCell *cell = [self.devicesTable cellForRowAtIndexPath:indexPath];
@@ -116,7 +130,6 @@
 
 - (void)deselectRow:(NSUInteger)row
 {
-    NSLog(@"deselectRow %d", row);
     NSIndexPath * indexPath = [NSIndexPath indexPathForRow:row inSection:0];
     UITableViewCell *cell = [devicesTable cellForRowAtIndexPath:indexPath];
     [cell viewWithTag:row + 1].hidden = YES;
@@ -174,27 +187,49 @@
     }
 }
 
+- (IBAction)searchDevices:(id)sender
+{
+    if (context)
+        [context getOthersInfo:context.broadcastAddress];
+    [self checkDevicesAvailability];
+}
 
 - (void)checkDevicesAvailability
 {
     currentDeviceCheckIndex = 0;
     if (currentDeviceCheckIndex < devices.count)
+    {
+        [progress startAnimating];
+        progressTitle.text = @"Поиск устройств...";
         if (![self checkDeviceAvailability:[devices objectAtIndex:currentDeviceCheckIndex]])
         {
             [devices markDeviceAtIndex:currentDeviceCheckIndex isAvailable:NO];
             [self checkNextDeviceAvailability];
         }
+    }
+    else
+    {
+        [progress stopAnimating];
+        progressTitle.text = @"";
+    }
 }
 
 - (void)checkNextDeviceAvailability
 {
     currentDeviceCheckIndex++;
     if (currentDeviceCheckIndex < devices.count)
+    {
         if (![self checkDeviceAvailability:[devices objectAtIndex:currentDeviceCheckIndex]])
         {
             [devices markDeviceAtIndex:currentDeviceCheckIndex isAvailable:NO];
             [self checkNextDeviceAvailability];
         }
+    }
+    else
+    {
+        [progress stopAnimating];
+        progressTitle.text = @"";
+    }
 }
 
 - (BOOL)checkDeviceAvailability:(RemoteDevice *)device

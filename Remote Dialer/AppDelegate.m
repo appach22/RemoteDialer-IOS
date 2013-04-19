@@ -24,6 +24,7 @@
 
 @implementation AppDelegate
 
+@synthesize broadcastAddress;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -37,6 +38,7 @@
     [self loadDevicesList];
     self.window.rootViewController = self.viewController;
     [self.window makeKeyAndVisible];
+    self.viewController.context = self;
     self.viewController.devices.mParentTable = self.viewController.devicesTable;
     [self.viewController checkDevicesAvailability];
     

@@ -51,7 +51,11 @@
         [self insertObject:device atIndex:index];
     }
     else
+    {
+        if ([device->mUid isEqualToString:self.mThisDeviceUid])
+            device->mType = DEVICE_TYPE_THIS;
         [self addObject:device];
+    }
     self.mLastSelectedIndex = [[NSNumber alloc] initWithInt:[self indexOfObject:selectedDevice]];
     [self reportNewDevices];
 }

@@ -21,7 +21,9 @@
 }
 
 @property (strong, nonatomic) UIWindow *window;
-
 @property (strong, nonatomic) ViewController *viewController;
+@property (readwrite, nonatomic) NSString * broadcastAddress;
+
+- (void)getOthersInfo:(NSString *)address;
 
 @end
