@@ -40,7 +40,9 @@
 
 - (void)addDevice:(RemoteDevice *)device
 {
-    RemoteDevice * selectedDevice = [self objectAtIndex:self.mLastSelectedIndex.intValue];
+    RemoteDevice * selectedDevice = nil;
+    if (self.mLastSelectedIndex.intValue != NSNotFound)
+        selectedDevice = [self objectAtIndex:self.mLastSelectedIndex.intValue];
     int index = [self indexOfObject:device];
     if (index != NSNotFound)
     {
@@ -56,13 +58,18 @@
             device->mType = DEVICE_TYPE_THIS;
         [self addObject:device];
     }
-    self.mLastSelectedIndex = [[NSNumber alloc] initWithInt:[self indexOfObject:selectedDevice]];
+    if (selectedDevice)
+        self.mLastSelectedIndex = [[NSNumber alloc] initWithInt:[self indexOfObject:selectedDevice]];
+    else
+        self.mLastSelectedIndex = [[NSNumber alloc] initWithInt:0];
     [self reportNewDevices];
 }
 
 - (void)removeAllExceptLocal
 {
-    RemoteDevice * selectedDevice = [self objectAtIndex:self.mLastSelectedIndex.intValue];
+    RemoteDevice * selectedDevice = nil;
+    if (self.mLastSelectedIndex.intValue != NSNotFound)
+        selectedDevice = [self objectAtIndex:self.mLastSelectedIndex.intValue];
     RemoteDevice * thisDevice = nil;
     for (int i = 0; i < [self count]; ++i)
         if (((RemoteDevice *)[self objectAtIndex:i])->mType == DEVICE_TYPE_THIS)
@@ -73,7 +80,10 @@
     [self removeAllObjects];
     if (thisDevice)
         [self addObject:thisDevice];
-    self.mLastSelectedIndex = [[NSNumber alloc] initWithInt:[self indexOfObject:selectedDevice]];
+    if (selectedDevice)
+        self.mLastSelectedIndex = [[NSNumber alloc] initWithInt:[self indexOfObject:selectedDevice]];
+    else
+        self.mLastSelectedIndex = [[NSNumber alloc] initWithInt:0];
     [self reportNewDevices];
 }
 
@@ -81,7 +91,12 @@
 {
     NSUserDefaults * settings = [NSUserDefaults standardUserDefaults];
     self.mThisDeviceName = [settings stringForKey:@"device_name"];
-    self.mThisDeviceUid = @"1234567890";
+    NSLog(@"%@", self.mThisDeviceUid);
+    if (self.mThisDeviceUid == nil)
+    {
+        NSUInteger uid = arc4random();
+        self.mThisDeviceUid = [[[NSString alloc] initWithFormat:@"%u", uid] copy];
+    }
     [self addDevice:[[RemoteDevice alloc] initLocalWithName:self.mThisDeviceName andUid:self.mThisDeviceUid]];
 }
 
@@ -93,12 +108,17 @@
 
 - (void)removeLocal
 {
-    RemoteDevice * selectedDevice = [self objectAtIndex:self.mLastSelectedIndex.intValue];
+    RemoteDevice * selectedDevice = nil;
+    if (self.mLastSelectedIndex.intValue != NSNotFound)
+        selectedDevice = [self objectAtIndex:self.mLastSelectedIndex.intValue];
     int localIndex = [self getLocalDeviceIndex];
     if (localIndex != NSNotFound)
     {
         [self removeObjectAtIndex:localIndex];
-        self.mLastSelectedIndex = [[NSNumber alloc] initWithInt:[self indexOfObject:selectedDevice]];
+        if (selectedDevice)
+            self.mLastSelectedIndex = [[NSNumber alloc] initWithInt:[self indexOfObject:selectedDevice]];
+        else
+            self.mLastSelectedIndex = [[NSNumber alloc] initWithInt:0];
         [self reportNewDevices];
     }
 }
@@ -126,7 +146,7 @@
         RemoteDevice * device = [self objectAtIndex:i];
         if (device->mType == DEVICE_TYPE_THIS)
         {
-            device->mModel = @"(Это устройство)";
+            device->mModel = NSLocalizedString(@"(This device)", @"");
             [self setObject:device atIndex:i];
         }
     }
@@ -144,7 +164,7 @@
 static char const * const kMThisDeviceNameKey = "kMThisDeviceNameKey";
 - (void)setMThisDeviceName:(NSString *)mThisDeviceName
 {
-    objc_setAssociatedObject(self, kMThisDeviceNameKey, mThisDeviceName, OBJC_ASSOCIATION_ASSIGN);
+    objc_setAssociatedObject(self, kMThisDeviceNameKey, mThisDeviceName, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 - (NSString *)mThisDeviceName
 {
@@ -155,7 +175,7 @@ static char const * const kMThisDeviceNameKey = "kMThisDeviceNameKey";
 static char const * const kMThisDeviceUidKey = "kMThisDeviceUidKey";
 - (void)setMThisDeviceUid:(NSString *)mThisDeviceUid
 {
-    objc_setAssociatedObject(self, kMThisDeviceUidKey, mThisDeviceUid, OBJC_ASSOCIATION_ASSIGN);
+    objc_setAssociatedObject(self, kMThisDeviceUidKey, mThisDeviceUid, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 - (NSString *)mThisDeviceUid
 {
@@ -166,7 +186,7 @@ static char const * const kMThisDeviceUidKey = "kMThisDeviceUidKey";
 static char const * const kMDefaultDeviceNameKey = "kMDefaultDeviceNameKey";
 - (void)setMDefaultDeviceName:(NSString *)mDefaultDeviceName
 {
-    objc_setAssociatedObject(self, kMDefaultDeviceNameKey, mDefaultDeviceName, OBJC_ASSOCIATION_ASSIGN);
+    objc_setAssociatedObject(self, kMDefaultDeviceNameKey, mDefaultDeviceName, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 - (NSString *)mDefaultDeviceName
 {
@@ -177,7 +197,7 @@ static char const * const kMDefaultDeviceNameKey = "kMDefaultDeviceNameKey";
 static char const * const kMDefaultDeviceUidKey = "kMDefaultDeviceUidKey";
 - (void)setMDefaultDeviceUid:(NSString *)mDefaultDeviceUid
 {
-    objc_setAssociatedObject(self, kMDefaultDeviceUidKey, mDefaultDeviceUid, OBJC_ASSOCIATION_ASSIGN);
+    objc_setAssociatedObject(self, kMDefaultDeviceUidKey, mDefaultDeviceUid, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 - (NSString *)mDefaultDeviceUid
 {
@@ -188,7 +208,7 @@ static char const * const kMDefaultDeviceUidKey = "kMDefaultDeviceUidKey";
 static char const * const kMParentTable = "kMParentTable";
 - (void)setMParentTable:(UITableView *)mParentTable
 {
-    objc_setAssociatedObject(self, kMParentTable, mParentTable, OBJC_ASSOCIATION_ASSIGN);
+    objc_setAssociatedObject(self, kMParentTable, mParentTable, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 - (UITableView *)mParentTable
 {
@@ -199,7 +219,7 @@ static char const * const kMParentTable = "kMParentTable";
 static char const * const kMLastSelectedIndex = "kMLastSelectedIndex";
 - (void)setMLastSelectedIndex:(NSNumber *)mLastSelectedIndex
 {
-    objc_setAssociatedObject(self, kMLastSelectedIndex, mLastSelectedIndex, OBJC_ASSOCIATION_ASSIGN);
+    objc_setAssociatedObject(self, kMLastSelectedIndex, mLastSelectedIndex, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 - (NSNumber *)mLastSelectedIndex
 {

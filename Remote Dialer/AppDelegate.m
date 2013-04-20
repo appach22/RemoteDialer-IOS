@@ -21,6 +21,7 @@
 
 #define kDevicesFileName            @"devices.plist"
 #define kSelectedDeviceFileName     @"selected_device.plist"
+#define kThisDeviceUidFileName      @"uid.plist"
 
 @implementation AppDelegate
 
@@ -49,7 +50,7 @@
     NSLog(@"name %@", [[UIDevice currentDevice] name]);
     NSLog(@"system name %@", [[UIDevice currentDevice] systemName]);
     NSLog(@"system version %@", [[UIDevice currentDevice] systemVersion]);
-    if (thisDeviceName.length == 0)
+    if (thisDeviceName == nil || thisDeviceName.length == 0)
     {
         [settings setValue:[[UIDevice currentDevice] name] forKey:@"device_name"];
     }
@@ -100,7 +101,10 @@
         [self getOthersInfo:broadcastAddress];
         
         if (carrierAvailable)
+        {
             [self sendMyInfo:broadcastAddress];
+            broadcastTimer = [NSTimer scheduledTimerWithTimeInterval:60.0 target:self selector:@selector(timerTicked:) userInfo:nil repeats:YES];
+        }
     }
     else
         NSLog(@"Unable to get broacast address for interface en0");
@@ -121,6 +125,11 @@
     if (phoneCarrier.isoCountryCode != nil)
         return YES;
     return NO;
+}
+
+- (void)timerTicked:(NSTimer*)timer
+{
+    [self sendMyInfo:broadcastAddress];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
@@ -288,6 +297,13 @@
     return [documentsDirectory stringByAppendingPathComponent:kSelectedDeviceFileName];
 }
 
+- (NSString *)thisDeviceUidFilePath
+{
+    NSArray * paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString * documentsDirectory = [paths objectAtIndex:0];
+    return [documentsDirectory stringByAppendingPathComponent:kThisDeviceUidFileName];
+}
+
 - (void)loadDevicesList
 {
     NSString * filePath = [self devicesFilePath];
@@ -295,7 +311,11 @@
     self.viewController.devices = [[NSMutableOrderedSet alloc] initWithOrderedSet:devices];
     [self.viewController.devicesTable reloadData];
     filePath = [self selectedDeviceFilePath];
-    self.viewController.devices.mLastSelectedIndex = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
+        self.viewController.devices.mLastSelectedIndex = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
+    if (self.viewController.devices.mLastSelectedIndex == nil)
+        self.viewController.devices.mLastSelectedIndex = [NSNumber numberWithInt:NSNotFound];
+    filePath = [self thisDeviceUidFilePath];
+    self.viewController.devices.mThisDeviceUid = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
 }
 
 - (void)saveDevicesList
@@ -306,6 +326,12 @@
     success = [NSKeyedArchiver archiveRootObject:self.viewController.devices.mLastSelectedIndex toFile:[self selectedDeviceFilePath]];
     if (!success)
         NSLog(@"Archiving 2 error");
+    if (self.viewController.devices.mThisDeviceUid != nil)
+    {
+        success = [NSKeyedArchiver archiveRootObject:self.viewController.devices.mThisDeviceUid toFile:[self thisDeviceUidFilePath]];
+        if (!success)
+            NSLog(@"Archiving 3 error");
+    }
 }
 
 @end

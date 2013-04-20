@@ -200,7 +200,7 @@
     if (currentDeviceCheckIndex < devices.count)
     {
         [progress startAnimating];
-        progressTitle.text = @"Поиск устройств...";
+        progressTitle.text = NSLocalizedString(@"Devices lookup...", @"");
         if (![self checkDeviceAvailability:[devices objectAtIndex:currentDeviceCheckIndex]])
         {
             [devices markDeviceAtIndex:currentDeviceCheckIndex isAvailable:NO];
@@ -248,7 +248,7 @@
 
 - (void)showDialingAlert
 {
-    dialingAlert = [[UIAlertView alloc]initWithTitle:@"" message:@"Набираем номер..." delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
+    dialingAlert = [[UIAlertView alloc]initWithTitle:@"" message:NSLocalizedString(@"Dialing number...", @"") delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
     [dialingAlert show];
     
     if(dialingAlert != nil) {
@@ -295,7 +295,10 @@
             if (sock == tcpDialSocket)
                 NSLog(@"Number dialed successfully");
             else if (sock == tcpCheckSocket)
+            {
                 [devices markDeviceAtIndex:currentDeviceCheckIndex isAvailable:YES];
+                NSLog(@"%@ is available", [sock connectedHost]);
+            }
         }
         else
         {

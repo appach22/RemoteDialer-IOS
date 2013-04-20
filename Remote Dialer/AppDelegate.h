@@ -18,6 +18,7 @@
     NSString * broadcastAddress;
     AsyncSocket * tcpServerSocket;
     AsyncSocket * connectionSocket;
+    NSTimer * broadcastTimer;
 }
 
 @property (strong, nonatomic) UIWindow *window;

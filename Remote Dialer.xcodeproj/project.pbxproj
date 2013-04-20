@@ -15,6 +15,7 @@
 		F3426E7F17188EEB0028A181 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3426E7E17188EEB0028A181 /* CoreTelephony.framework */; };
 		F3426E82171964860028A181 /* UIDevicesTable.m in Sources */ = {isa = PBXBuildFile; fileRef = F3426E81171964860028A181 /* UIDevicesTable.m */; };
 		F3426E841719838D0028A181 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = F3426E831719838D0028A181 /* Settings.bundle */; };
+		F35FA77B1722D97F005BB12E /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = F35FA77D1722D97F005BB12E /* Localizable.strings */; };
 		F3966EF01706E73700D53AE3 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3966EEF1706E73700D53AE3 /* UIKit.framework */; };
 		F3966EF21706E73700D53AE3 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3966EF11706E73700D53AE3 /* Foundation.framework */; };
 		F3966EF41706E73700D53AE3 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3966EF31706E73700D53AE3 /* CoreGraphics.framework */; };
@@ -43,6 +44,11 @@
 		F3426E80171964860028A181 /* UIDevicesTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIDevicesTable.h; sourceTree = "<group>"; };
 		F3426E81171964860028A181 /* UIDevicesTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UIDevicesTable.m; sourceTree = "<group>"; };
 		F3426E831719838D0028A181 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
+		F35FA77C1722D97F005BB12E /* en */ = {isa = PBXFileReference; lastKnownFileType = file; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		F35FA77F1722DA8B005BB12E /* ru */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = ru; path = ru.lproj/ViewController_iPhone.xib; sourceTree = "<group>"; };
+		F35FA7801722DA8C005BB12E /* ru */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = ru; path = ru.lproj/ViewController_iPad.xib; sourceTree = "<group>"; };
+		F35FA7811722DA8C005BB12E /* ru */ = {isa = PBXFileReference; lastKnownFileType = file; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		F35FA7821722DA8C005BB12E /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		F3966EEC1706E73700D53AE3 /* Remote Dialer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Remote Dialer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3966EEF1706E73700D53AE3 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		F3966EF11706E73700D53AE3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -135,6 +141,7 @@
 		F3966EF61706E73700D53AE3 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				F35FA77D1722D97F005BB12E /* Localizable.strings */,
 				F3966EF71706E73700D53AE3 /* Remote Dialer-Info.plist */,
 				F3966EF81706E73700D53AE3 /* InfoPlist.strings */,
 				F3966EFB1706E73700D53AE3 /* main.m */,
@@ -181,6 +188,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				ru,
 			);
 			mainGroup = F3966EE31706E73700D53AE3;
 			productRefGroup = F3966EED1706E73700D53AE3 /* Products */;
@@ -204,6 +212,7 @@
 				F3966F0C1706E73700D53AE3 /* ViewController_iPhone.xib in Resources */,
 				F3966F0F1706E73700D53AE3 /* ViewController_iPad.xib in Resources */,
 				F3426E841719838D0028A181 /* Settings.bundle in Resources */,
+				F35FA77B1722D97F005BB12E /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -228,10 +237,21 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
+		F35FA77D1722D97F005BB12E /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				F35FA77C1722D97F005BB12E /* en */,
+				F35FA7811722DA8C005BB12E /* ru */,
+			);
+			name = Localizable.strings;
+			path = ..;
+			sourceTree = "<group>";
+		};
 		F3966EF81706E73700D53AE3 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
 				F3966EF91706E73700D53AE3 /* en */,
+				F35FA7821722DA8C005BB12E /* ru */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -240,6 +260,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				F3966F0B1706E73700D53AE3 /* en */,
+				F35FA77F1722DA8B005BB12E /* ru */,
 			);
 			name = ViewController_iPhone.xib;
 			sourceTree = "<group>";
@@ -248,6 +269,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				F3966F0E1706E73700D53AE3 /* en */,
+				F35FA7801722DA8C005BB12E /* ru */,
 			);
 			name = ViewController_iPad.xib;
 			sourceTree = "<group>";
